@@ -13,7 +13,7 @@ export class AppComponent {
 
   title:string = 'Scuffed bin';
   currentNote: string = '';
-  currentLink: string = '';
+  response: string = '';
 
   public listPastes(): void {
     // TODO api call to get pastes
@@ -21,8 +21,11 @@ export class AppComponent {
 
   public savePaste(): void {
     // TODO api call to save paste
-    this.currentLink = 'test';
-    this.notesService.listNotes().subscribe(res => console.log(res));
+    this.response = 'Waiting...';
+    this.notesService.postNote(this.currentNote).subscribe(res => {
+      this.response = res['post-body'];
+      console.log(res);
+    });
   }
 
   public clearPaste(): void {

@@ -11,8 +11,9 @@
         <button class="btn btn-primary mt-2" (click)="clearPaste()">Clear</button>
       </div>
 
-      <div *ngIf="currentLink" class="col-12 justify-content-center">
-        <p>TODO put link here</p>
+      <div *ngIf="response" class="col-12 justify-content-center">
+        <h3>Response:</h3>
+        <p>{{response}}</p>
       </div>
 </div>
 
