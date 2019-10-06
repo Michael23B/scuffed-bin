@@ -6,12 +6,11 @@ import (
   "fmt"
   "github.com/davecgh/go-spew/spew"
   "github.com/gorilla/mux"
+  _ "github.com/lib/pq"
+  "github.com/spf13/cobra"
   "log"
   "net/http"
   "os"
-
-  _ "github.com/lib/pq"
-  "github.com/spf13/cobra"
 )
 
 type Post struct {
@@ -93,6 +92,7 @@ var rootCmd = &cobra.Command{
   Long:  `Webserver for scuffed-bin project`,
   Run: func(cmd *cobra.Command, args []string) {
     var err error
+
     psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
       "password=%s dbname=%s sslmode=disable",
       host, port, user, password, dbname)
@@ -117,7 +117,7 @@ var rootCmd = &cobra.Command{
       log.Printf("Error on creating EXTENSION: %v\n", err)
       os.Exit(1)
     }
-      
+
     if _, err = globalDB.Exec(`
       CREATE TABLE IF NOT EXISTS posts 
       (
@@ -126,19 +126,18 @@ var rootCmd = &cobra.Command{
         date timestamp NOT NULL DEFAULT NOW()
         CONSTRAINT uri_pk PRIMARY KEY ( uri )
       )`);
-    err != nil {
+      err != nil {
       log.Printf("Error on creating TABLE: %v\n", err)
       os.Exit(1)
     }
 
     router := mux.NewRouter()
-    router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-      http.ServeFile(w, r, "../src/index.html")
-    })
-
     router.HandleFunc("/post/{id}", getPost).Methods("GET")
     router.HandleFunc("/post", uploadPost).Methods("POST", "OPTIONS")
-    log.Fatal(http.ListenAndServe(serverPort, router))
+    fs := http.FileServer(http.Dir("../dist/scuffed-bin"))
+    router.PathPrefix("").Handler(fs)
+    log.Fatal(http.ListenAndServe(":"+serverPort, router))
+
   },
 }
 
