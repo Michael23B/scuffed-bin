@@ -4,12 +4,12 @@ import (
   "database/sql"
   "encoding/json"
   "fmt"
-  "github.com/davecgh/go-spew/spew"
   "github.com/gorilla/mux"
   "log"
   "net/http"
   "os"
 
+  _ "github.com/lib/pq"
   "github.com/spf13/cobra"
 )
 
@@ -20,13 +20,9 @@ type Post struct {
 }
 
 var (
-  host       = os.Getenv("DBHOST")
-  port       = os.Getenv("DBPORT")
-  user       = os.Getenv("DBUSER")
-  password   = os.Getenv("DBPASSWORD")
-  dbname     = os.Getenv("DBNAME")
   globalDB   *sql.DB
   serverPort = os.Getenv("PORT")
+  databaseURL = os.Getenv("DATABASE_URL")
 )
 
 func getPost(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +60,6 @@ func uploadPost(w http.ResponseWriter, r *http.Request) {
 
   var post Post
   _ = json.NewDecoder(r.Body).Decode(&post)
-  spew.Dump(post)
 
   sqlStatement := fmt.Sprintf(`
 	INSERT INTO posts (posts)
@@ -93,11 +88,7 @@ var rootCmd = &cobra.Command{
   Run: func(cmd *cobra.Command, args []string) {
     var err error
 
-    psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-      "password=%s dbname=%s sslmode=disable",
-      host, port, user, password, dbname)
-
-    globalDB, err = sql.Open("postgres", psqlInfo)
+    globalDB, err = sql.Open("postgres", databaseURL)
     if err != nil {
       panic(err)
     }
@@ -121,10 +112,9 @@ var rootCmd = &cobra.Command{
     if _, err = globalDB.Exec(`
       CREATE TABLE IF NOT EXISTS posts 
       (
-        uri UUID NOT NULL DEFAULT uuid_generate_v1() , 
-        posts text CONSTRAINTS,
+        uri UUID NOT NULL PRIMARY KEY DEFAULT uuid_generate_v1() , 
+        posts text,
         date timestamp NOT NULL DEFAULT NOW()
-        CONSTRAINT uri_pk PRIMARY KEY ( uri )
       )`);
       err != nil {
       log.Printf("Error on creating TABLE: %v\n", err)
