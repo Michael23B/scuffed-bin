@@ -21,14 +21,14 @@ type Post struct {
 }
 
 var (
-  host     = os.Getenv("DBHOST")
-  port     = os.Getenv("DBPORT")
-  user     = os.Getenv("DBUSER")
-  password = os.Getenv("DBPASSWORD")
-  dbname   = os.Getenv("DBNAME")
+  host       = os.Getenv("DBHOST")
+  port       = os.Getenv("DBPORT")
+  user       = os.Getenv("DBUSER")
+  password   = os.Getenv("DBPASSWORD")
+  dbname     = os.Getenv("DBNAME")
+  globalDB   *sql.DB
+  serverPort = os.Getenv("PORT")
 )
-
-var globalDB *sql.DB
 
 func getPost(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -118,7 +118,7 @@ var rootCmd = &cobra.Command{
 
     router.HandleFunc("/post/{id}", getPost).Methods("GET")
     router.HandleFunc("/post", uploadPost).Methods("POST", "OPTIONS")
-    log.Fatal(http.ListenAndServe(":8070", router))
+    log.Fatal(http.ListenAndServe(serverPort, router))
   },
 }
 
