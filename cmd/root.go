@@ -6,11 +6,11 @@ import (
   "fmt"
   "github.com/davecgh/go-spew/spew"
   "github.com/gorilla/mux"
-  _ "github.com/lib/pq"
-  "github.com/spf13/cobra"
   "log"
   "net/http"
   "os"
+
+  "github.com/spf13/cobra"
 )
 
 type Post struct {
