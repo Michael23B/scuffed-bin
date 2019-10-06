@@ -1,6 +1,6 @@
 package main
 
-import "scuffed-bin/server/cmd"
+import "scuffed-bin/cmd"
 
 func main() {
   cmd.Execute()
