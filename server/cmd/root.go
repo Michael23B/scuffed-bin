@@ -111,6 +111,26 @@ var rootCmd = &cobra.Command{
 
     fmt.Println("Successfully connected!")
 
+    if _, err = globalDB.Exec(`
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`);
+      err != nil {
+      log.Printf("Error on creating EXTENSION: %v\n", err)
+      os.Exit(1)
+    }
+      
+    if _, err = globalDB.Exec(`
+      CREATE TABLE IF NOT EXISTS posts 
+      (
+        uri UUID NOT NULL DEFAULT uuid_generate_v1() , 
+        posts text CONSTRAINTS,
+        date timestamp NOT NULL DEFAULT NOW()
+        CONSTRAINT uri_pk PRIMARY KEY ( uri )
+      )`);
+    err != nil {
+      log.Printf("Error on creating TABLE: %v\n", err)
+      os.Exit(1)
+    }
+
     router := mux.NewRouter()
     router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
       http.ServeFile(w, r, "../src/index.html")
